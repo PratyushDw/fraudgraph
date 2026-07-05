@@ -1,0 +1,112 @@
+# FraudGraph — MCP Toolbox for Databases tool layer (design doc §1.6)
+# ---------------------------------------------------------------------
+# Parameterized-only SQL against BigQuery: injection-safe and least-privilege by
+# construction. Consumed by the ADK 2.x agents via `google-adk[toolbox]`.
+#
+# Run locally:   toolbox --tools-file app/agents/tools.yaml
+# Env required:  FRAUDGRAPH_PROJECT_ID (GCP project hosting dataset `fraudgraph`)
+#
+# Integrity note: agent-facing tools deliberately do NOT expose the ground-truth
+# columns (is_mule_gt / is_fraud_gt). Agents must build case files from observed
+# evidence, not from generator labels; ground truth is used only for offline
+# precision/recall evaluation in the benchmark notebook.
+
+sources:
+  fraudgraph-bq:
+    kind: bigquery
+    project: ${FRAUDGRAPH_PROJECT_ID}
+
+tools:
+  list_top_rings:
+    kind: bigquery-sql
+    source: fraudgraph-bq
+    description: >
+      List detected fraud rings ranked by investigation priority
+      (risk_score x total_amount). Returns ring_id, pattern_label, risk_score,
+      n_accounts, n_txns, total_amount.
+    parameters:
+      - name: max_rings
+        type: integer
+        description: Maximum number of rings to return (keep at 20 or fewer).
+    statement: |
+      SELECT ring_id, pattern_label, risk_score, n_accounts, n_txns, total_amount
+      FROM `fraudgraph.ring_features`
+      ORDER BY risk_score * total_amount DESC
+      LIMIT @max_rings;
+
+  get_ring_summary:
+    kind: bigquery-sql
+    source: fraudgraph-bq
+    description: >
+      Full feature row for one detected ring: size, transaction count, total
+      amount, density, cyclicity, fan-in ratio, burstiness, pattern label and
+      risk score.
+    parameters:
+      - name: ring_id
+        type: string
+        description: The ring_id to summarize (from list_top_rings).
+    statement: |
+      SELECT ring_id, n_accounts, n_txns, total_amount, density, cyclicity,
+             fanin_ratio, burstiness, pattern_label, risk_score
+      FROM `fraudgraph.ring_features`
+      WHERE ring_id = @ring_id;
+
+  get_ring_transactions:
+    kind: bigquery-sql
+    source: fraudgraph-bq
+    description: >
+      Transactions touching any member account of the given ring, oldest first.
+      Every txn_id returned is real and citable as case-file evidence.
+    parameters:
+      - name: ring_id
+        type: string
+        description: The ring_id whose member transactions to fetch.
+      - name: max_txns
+        type: integer
+        description: Maximum transactions to return (keep at 200 or fewer).
+    statement: |
+      WITH members AS (
+        SELECT account_id FROM `fraudgraph.ring_assignments`
+        WHERE ring_id = @ring_id AND method != 'ground_truth'
+      )
+      SELECT t.txn_id, t.ts, t.src_account, t.dst_account, t.amount, t.channel,
+             t.device_id
+      FROM `fraudgraph.transactions` t
+      WHERE t.src_account IN (SELECT account_id FROM members)
+         OR t.dst_account IN (SELECT account_id FROM members)
+      ORDER BY t.ts
+      LIMIT @max_txns;
+
+  get_account_profile:
+    kind: bigquery-sql
+    source: fraudgraph-bq
+    description: >
+      Profile for one account: creation date, geo, base risk, plus observed
+      in/out transaction counts and amounts. Ground-truth labels are not exposed.
+    parameters:
+      - name: account_id
+        type: string
+        description: The account_id to profile.
+    statement: |
+      SELECT a.account_id, a.created_at, a.geo, a.base_risk,
+             (SELECT COUNT(*)
+              FROM `fraudgraph.transactions` t
+              WHERE t.src_account = @account_id) AS out_txns,
+             (SELECT ROUND(COALESCE(SUM(t.amount), 0), 2)
+              FROM `fraudgraph.transactions` t
+              WHERE t.src_account = @account_id) AS out_amount,
+             (SELECT COUNT(*)
+              FROM `fraudgraph.transactions` t
+              WHERE t.dst_account = @account_id) AS in_txns,
+             (SELECT ROUND(COALESCE(SUM(t.amount), 0), 2)
+              FROM `fraudgraph.transactions` t
+              WHERE t.dst_account = @account_id) AS in_amount
+      FROM `fraudgraph.accounts` a
+      WHERE a.account_id = @account_id;
+
+toolsets:
+  fraud_desk:
+    - list_top_rings
+    - get_ring_summary
+    - get_ring_transactions
+    - get_account_profile
