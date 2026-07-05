@@ -1,0 +1,22 @@
+# FraudGraph — pinned dependencies (Python 3.11)
+# Agents (ADK 2.x Workflow Runtime + MCP Toolbox tool layer)
+google-adk[toolbox]==2.3.0
+google-genai==2.10.0
+
+# Console + warehouse access
+streamlit==1.58.0
+google-cloud-bigquery==3.42.1
+google-cloud-storage==3.12.0
+db-dtypes==1.7.0
+pyvis==0.3.2
+matplotlib==3.11.0
+
+# Generator / data handling
+numpy==2.4.6
+pandas==3.0.3
+pyarrow==24.0.0
+networkx==3.6.1
+
+# GPU pipeline (cudf-cu12 / cugraph-cu12) is NOT listed here on purpose:
+# it runs on Colab/Kaggle T4 and is installed inside
+# notebooks/01_gpu_pipeline_benchmark.ipynb from https://pypi.nvidia.com

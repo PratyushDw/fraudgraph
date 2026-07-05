@@ -1,0 +1,136 @@
+<svg viewBox="0 0 880 1290" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5F6368"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="880" height="1290" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="440" y="42" text-anchor="middle" font-size="23" font-weight="700" fill="#202124">FraudGraph — System Architecture</text>
+  <text x="440" y="64" text-anchor="middle" font-size="12.5" fill="#5F6368">GPU-accelerated fraud-ring detection + agentic investigation · Gen AI Academy APAC Cohort 2 · PS2</text>
+
+  <!-- Legend -->
+  <rect x="215" y="80" width="12" height="12" rx="2" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="232" y="90" font-size="11" fill="#3C4043">Google Cloud layer</text>
+  <rect x="345" y="80" width="12" height="12" rx="2" fill="#F1F8E4" stroke="#76B900" stroke-width="1.5"/>
+  <text x="362" y="90" font-size="11" fill="#3C4043">NVIDIA layer</text>
+  <rect x="455" y="80" width="12" height="12" rx="2" fill="#F3E8FD" stroke="#A142F4" stroke-width="1.5"/>
+  <text x="472" y="90" font-size="11" fill="#3C4043">ADK agents</text>
+  <rect x="560" y="80" width="12" height="12" rx="2" fill="#FEF7E0" stroke="#F9AB00" stroke-width="1.5"/>
+  <text x="577" y="90" font-size="11" fill="#3C4043">Human-in-the-loop</text>
+
+  <!-- L0: Synthetic Data Foundry -->
+  <rect x="40" y="108" width="800" height="92" rx="10" fill="#F8F9FA" stroke="#9AA0A6" stroke-width="1.5"/>
+  <text x="60" y="132" font-size="14" font-weight="700" fill="#202124">0 · Synthetic Data Foundry (Python generator, PaySim-seeded)</text>
+  <text x="60" y="153" font-size="11.5" fill="#3C4043">Realistic background traffic (power-law degrees, diurnal timestamps) + injected fraud topologies with ground-truth labels:</text>
+  <text x="60" y="171" font-size="11.5" fill="#3C4043">smurfing fan-in · dispersal fan-out · cyclic laundering rings (4–7 hops) · mule chains · dormant-burst accounts</text>
+  <text x="60" y="189" font-size="11" font-style="italic" fill="#5F6368">Scale knob: 1M → 10M → 50M transaction edges</text>
+
+  <line x1="440" y1="200" x2="440" y2="238" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="223" font-size="10.5" font-style="italic" fill="#5F6368">Parquet: accounts, transactions (+ labels)</text>
+
+  <!-- L1: Cloud Storage -->
+  <rect x="40" y="240" width="800" height="76" rx="10" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="60" y="264" font-size="14" font-weight="700" fill="#174EA6">1 · Cloud Storage — data lake</text>
+  <text x="60" y="284" font-size="11.5" fill="#3C4043">Buckets: /raw (generator output) · /curated · /results — raw tables also loaded into BigQuery for the agent layer</text>
+  <text x="60" y="302" font-size="11" font-style="italic" fill="#5F6368">Zone layout keeps GPU reads fast (columnar Parquet) and BigQuery loads one-command simple</text>
+
+  <line x1="440" y1="316" x2="440" y2="354" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="339" font-size="10.5" font-style="italic" fill="#5F6368">GPU pipeline reads raw Parquet directly</text>
+
+  <!-- L2: NVIDIA Acceleration Layer -->
+  <rect x="40" y="356" width="800" height="252" rx="10" fill="#F1F8E4" stroke="#76B900" stroke-width="2"/>
+  <text x="60" y="381" font-size="14" font-weight="700" fill="#3E6606">2 · NVIDIA Acceleration Layer — T4 (Colab/Kaggle) → L4 (Vertex AI Workbench)</text>
+
+  <rect x="60" y="396" width="374" height="76" rx="8" fill="#FFFFFF" stroke="#76B900" stroke-width="1.2"/>
+  <text x="76" y="418" font-size="12.5" font-weight="700" fill="#202124">cuDF / cudf.pandas — ETL + features</text>
+  <text x="76" y="436" font-size="11" fill="#3C4043">Cleaning, joins, groupbys · velocity windows ·</text>
+  <text x="76" y="452" font-size="11" fill="#3C4043">in/out-degree + amount stats per account</text>
+
+  <rect x="446" y="396" width="374" height="76" rx="8" fill="#FFFFFF" stroke="#76B900" stroke-width="1.2"/>
+  <text x="462" y="418" font-size="12.5" font-weight="700" fill="#202124">cuGraph — graph analytics</text>
+  <text x="462" y="436" font-size="11" fill="#3C4043">Weakly connected components · Louvain</text>
+  <text x="462" y="452" font-size="11" fill="#3C4043">communities · PageRank hub centrality</text>
+
+  <rect x="60" y="484" width="374" height="76" rx="8" fill="#FFFFFF" stroke="#76B900" stroke-width="1.2"/>
+  <text x="76" y="506" font-size="12.5" font-weight="700" fill="#202124">Ring extraction + risk scoring</text>
+  <text x="76" y="524" font-size="11" fill="#3C4043">Density, cyclicity, fan-in ratio, burstiness →</text>
+  <text x="76" y="540" font-size="11" fill="#3C4043">pattern label + score (optional cuML XGBoost)</text>
+
+  <rect x="446" y="484" width="374" height="76" rx="8" fill="#FFFFFF" stroke="#76B900" stroke-width="1.2"/>
+  <text x="462" y="506" font-size="12.5" font-weight="700" fill="#202124">Benchmark harness — the PS2 evidence</text>
+  <text x="462" y="524" font-size="11" fill="#3C4043">Same VM: pandas + NetworkX vs cuDF + cuGraph</text>
+  <text x="462" y="540" font-size="11" fill="#3C4043">1M / 10M / 50M edges · cold + warm · specs logged</text>
+
+  <text x="60" y="588" font-size="11" font-style="italic" fill="#5F6368">Why GPU: ring structure only emerges from whole-graph algorithms — minutes-vs-hours difference is what makes same-day freezes possible</text>
+
+  <line x1="440" y1="608" x2="440" y2="646" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="631" font-size="10.5" font-style="italic" fill="#5F6368">writes: ring_assignments · ring_features · risk_scores · benchmarks</text>
+
+  <!-- L3: BigQuery -->
+  <rect x="40" y="648" width="800" height="92" rx="10" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="60" y="672" font-size="14" font-weight="700" fill="#174EA6">3 · BigQuery — single source of truth</text>
+  <text x="60" y="692" font-size="11.5" fill="#3C4043">Tables: transactions · accounts · ring_assignments · ring_features · risk_scores · benchmarks · case_files · analyst_decisions</text>
+  <text x="60" y="710" font-size="11.5" fill="#3C4043">Every number the agents cite lives here — grounding by construction, and Looker Studio (optional) reads the same tables</text>
+  <text x="60" y="728" font-size="11" font-style="italic" fill="#5F6368">Detection artifacts and human decisions share one warehouse → full audit trail</text>
+
+  <line x1="440" y1="740" x2="440" y2="778" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="763" font-size="10.5" font-style="italic" fill="#5F6368">ADK BigQuery toolset — grounded, read-mostly SQL</text>
+
+  <!-- L4: ADK Agent Mesh -->
+  <rect x="40" y="780" width="800" height="176" rx="10" fill="#F3E8FD" stroke="#A142F4" stroke-width="2"/>
+  <text x="60" y="805" font-size="14" font-weight="700" fill="#5E1B99">4 · ADK Agent Mesh — Gemini 2.5 Flash on Vertex AI (sequential workflow)</text>
+
+  <rect x="60" y="820" width="230" height="86" rx="8" fill="#FFFFFF" stroke="#A142F4" stroke-width="1.2"/>
+  <text x="76" y="842" font-size="12.5" font-weight="700" fill="#202124">Triage Agent</text>
+  <text x="76" y="860" font-size="11" fill="#3C4043">Ranks flagged rings by risk</text>
+  <text x="76" y="876" font-size="11" fill="#3C4043">score × financial exposure;</text>
+  <text x="76" y="892" font-size="11" fill="#3C4043">picks the investigation queue</text>
+
+  <line x1="290" y1="863" x2="322" y2="863" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <rect x="325" y="820" width="230" height="86" rx="8" fill="#FFFFFF" stroke="#A142F4" stroke-width="1.2"/>
+  <text x="341" y="842" font-size="12.5" font-weight="700" fill="#202124">Investigator Agent</text>
+  <text x="341" y="860" font-size="11" fill="#3C4043">Pulls ring txns, member</text>
+  <text x="341" y="876" font-size="11" fill="#3C4043">profiles, timelines, flow paths</text>
+  <text x="341" y="892" font-size="11" fill="#3C4043">via BigQuery + graph tools</text>
+
+  <line x1="555" y1="863" x2="587" y2="863" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <rect x="590" y="820" width="230" height="86" rx="8" fill="#FFFFFF" stroke="#A142F4" stroke-width="1.2"/>
+  <text x="606" y="842" font-size="12.5" font-weight="700" fill="#202124">Case-File Agent</text>
+  <text x="606" y="860" font-size="11" fill="#3C4043">Drafts SAR-style report:</text>
+  <text x="606" y="876" font-size="11" fill="#3C4043">pattern, money-flow narrative,</text>
+  <text x="606" y="892" font-size="11" fill="#3C4043">evidence txn IDs, action</text>
+
+  <text x="60" y="936" font-size="11" font-style="italic" fill="#5F6368">Grounding rule: every claim must cite txn_id / account_id returned by tools — no invented numbers · all tool calls logged</text>
+
+  <line x1="440" y1="956" x2="440" y2="994" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="979" font-size="10.5" font-style="italic" fill="#5F6368">case files + ranked ring queue</text>
+
+  <!-- L5: Analyst Console -->
+  <rect x="40" y="996" width="800" height="118" rx="10" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.5"/>
+  <text x="60" y="1020" font-size="14" font-weight="700" fill="#174EA6">5 · Analyst Console — Streamlit on Cloud Run</text>
+  <text x="60" y="1040" font-size="11.5" fill="#3C4043">Tabs: ① Rings dashboard (ranked queue, exposure KPIs) · ② Ring detail with interactive subgraph visualization ·</text>
+  <text x="60" y="1058" font-size="11.5" fill="#3C4043">③ Case-file review with Approve / Reject / Escalate · ④ Acceleration benchmark (CPU-vs-GPU chart + methodology)</text>
+  <text x="60" y="1076" font-size="11" font-style="italic" fill="#5F6368">Serverless, scale-to-zero — the deployment story for Slide 9 · Looker Studio dashboard optional over the same BigQuery tables</text>
+  <text x="60" y="1096" font-size="11" font-style="italic" fill="#5F6368">Slide-10 screenshots come from these four tabs</text>
+
+  <line x1="440" y1="1114" x2="440" y2="1152" stroke="#5F6368" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="452" y="1137" font-size="10.5" font-style="italic" fill="#5F6368">human-in-the-loop</text>
+
+  <!-- L6: Analyst -->
+  <rect x="40" y="1154" width="800" height="66" rx="10" fill="#FEF7E0" stroke="#F9AB00" stroke-width="2"/>
+  <text x="60" y="1180" font-size="14" font-weight="700" fill="#994C00">6 · Fraud Analyst / FIU Officer</text>
+  <text x="60" y="1200" font-size="11.5" fill="#3C4043">Reviews evidence, approves or rejects each case — the agent recommends, the human decides</text>
+
+  <!-- Feedback arrow: Analyst -> BigQuery (right gutter) -->
+  <path d="M 840 1187 L 862 1187 L 862 694 L 848 694" fill="none" stroke="#F9AB00" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="871" y="945" font-size="10.5" font-style="italic" fill="#994C00" transform="rotate(90 871 945)" text-anchor="middle">decisions → analyst_decisions table (audit trail)</text>
+
+  <!-- Footer requirement mapping -->
+  <text x="440" y="1250" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3C4043">PS2 stack coverage — Google Cloud: BigQuery · Cloud Storage · Cloud Run (+ Looker Studio)  |  NVIDIA: cuDF/cudf.pandas · cuGraph (+ cuML) on NVIDIA T4/L4 GPUs</text>
+  <text x="440" y="1272" text-anchor="middle" font-size="10.5" font-style="italic" fill="#5F6368">Data → GPU detection → warehouse → agentic investigation → human decision: raw signals become an auditable, accelerated decision workflow</text>
+</svg>

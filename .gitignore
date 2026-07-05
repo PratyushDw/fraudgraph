@@ -1,0 +1,21 @@
+# Generated data (recreate with generator/generate.py)
+data/
+
+# Secrets & credentials
+.env
+*.env
+service-account*.json
+*-key.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.egg-info/
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.vscode/
