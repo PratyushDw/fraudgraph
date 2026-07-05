@@ -3,8 +3,11 @@
 
 CREATE SCHEMA IF NOT EXISTS fraudgraph;
 
+-- Note: no NOT NULL constraints — Parquet load jobs present all fields as
+-- NULLABLE; non-nullness is guaranteed by the generator and checked in its
+-- sanity suite instead.
 CREATE TABLE IF NOT EXISTS fraudgraph.accounts (
-  account_id  STRING NOT NULL,
+  account_id  STRING,
   created_at  TIMESTAMP,
   geo         STRING,
   base_risk   FLOAT64,
@@ -12,7 +15,7 @@ CREATE TABLE IF NOT EXISTS fraudgraph.accounts (
 );
 
 CREATE TABLE IF NOT EXISTS fraudgraph.transactions (
-  txn_id       STRING NOT NULL,
+  txn_id       STRING,
   ts           TIMESTAMP,
   src_account  STRING,
   dst_account  STRING,
