@@ -6,6 +6,7 @@ google-genai==2.10.0
 # Console + warehouse access
 streamlit==1.58.0
 google-cloud-bigquery==3.42.1
+google-cloud-bigquery-storage==2.34.0
 google-cloud-storage==3.12.0
 db-dtypes==1.7.0
 pyvis==0.3.2

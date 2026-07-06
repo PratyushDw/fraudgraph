@@ -1,0 +1,15 @@
+# Keep the Cloud Build upload small: the container only needs
+# Dockerfile, requirements.txt and app/.
+.*
+*.md
+*.pdf
+data/
+notebooks/
+Reference_Docs/
+generator/
+infra/
+assets/
+__pycache__/
+*.pyc
+venv/
+*.code-workspace
