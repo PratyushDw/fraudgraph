@@ -28,7 +28,8 @@ statistical reference for mobile-money transaction shape only — no PaySim data
 included. Every record here is synthetic; ground-truth labels (is_mule_gt,
 is_fraud_gt) exist precisely because we control generation.
 
-Output (partitioned Parquet under --out, schemas match BigQuery dataset design §1.2):
+Output (partitioned Parquet under --out, schemas match the BigQuery tables in
+infra/schemas.sql):
     accounts/          account_id, created_at, geo, base_risk, is_mule_gt
     transactions/      txn_id, ts, src_account, dst_account, amount, channel,
                        device_id, is_fraud_gt          (multiple part files)
@@ -426,7 +427,7 @@ def main():
     pq.write_table(assignments, out / "ring_assignments" / "part-00000.parquet",
                    compression="snappy")
 
-    # -- manifest + honest summary stats
+    # -- manifest + summary stats
     total_txns = txn_id + len(fraud_rows)
     top1 = int(max(1, n_total // 100))
     top1_share = float(np.sort(out_deg)[::-1][:top1].sum() / max(out_deg.sum(), 1))

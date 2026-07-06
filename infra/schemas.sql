@@ -1,4 +1,4 @@
--- FraudGraph BigQuery DDL — dataset `fraudgraph`, tables per design doc §1.2.
+-- FraudGraph BigQuery DDL - dataset `fraudgraph` and its seven tables.
 -- Run with the default project set:  bq query --use_legacy_sql=false < infra/schemas.sql
 
 CREATE SCHEMA IF NOT EXISTS fraudgraph;
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS fraudgraph.benchmarks (
   warm              BOOL,
   hardware          STRING,
   library_versions  STRING,
-  status            STRING    -- 'ok' | 'DNF >N min'; additive extension to §1.2 for honest DNF recording
+  status            STRING    -- 'ok' | 'DNF >N min' (runs that hit the time cap stay in the record)
 );
 
 CREATE TABLE IF NOT EXISTS fraudgraph.case_files (

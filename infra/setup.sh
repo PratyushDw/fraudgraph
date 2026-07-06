@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# FraudGraph — one-shot GCP setup (design doc Phase 0, item 2).
+# FraudGraph - one-shot GCP setup.
 # REVIEW BEFORE RUNNING: creates a bucket and a service account, enables APIs.
-# Costs at design scale (<=50M synthetic rows) stay within free tier, but the
-# project must have billing enabled for Cloud Run / Vertex AI later.
+# Storage and BigQuery usage at this scale stays within the free tier, but the
+# project needs billing enabled for Cloud Run / Vertex AI.
 #
 # Usage:
 #   export PROJECT_ID=<your-project> BUCKET=<globally-unique-bucket-name>
@@ -31,7 +31,7 @@ bq --location="${REGION}" mk --dataset --force "${PROJECT_ID}:${DATASET}"
 bq query --use_legacy_sql=false --project_id="${PROJECT_ID}" \
   < "$(dirname "$0")/schemas.sql"
 
-echo "--- Service account (least privilege, design Phase 0 roles) ---"
+echo "--- Service account (least-privilege roles) ---"
 gcloud iam service-accounts create "${SA_NAME}" --display-name="FraudGraph app" || true
 gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
   --member="serviceAccount:${SA_EMAIL}" --role="roles/bigquery.jobUser" --quiet
@@ -46,7 +46,7 @@ gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
 cat <<EOF
 
 Setup complete.
-Next (Phase 0 items 3-4):
+Next steps:
   1. Generate:  python generator/generate.py --edges 1e6 --out data/1m --seed 42
   2. Upload:    gcloud storage cp -r data/1m "gs://${BUCKET}/raw/1m"
   3. Load BQ:   bash infra/load_bq.sh   (or the bq load commands in that file)
