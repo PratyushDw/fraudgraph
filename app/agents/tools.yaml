@@ -1,15 +1,16 @@
-# FraudGraph — MCP Toolbox for Databases tool layer (design doc §1.6)
-# ---------------------------------------------------------------------
-# Parameterized-only SQL against BigQuery: injection-safe and least-privilege by
-# construction. Consumed by the ADK 2.x agents via `google-adk[toolbox]`.
+# FraudGraph - MCP Toolbox for Databases tool layer
+# --------------------------------------------------
+# Parameterized-only SQL against BigQuery, consumed by the ADK agents via
+# `google-adk[toolbox]`. Parameterized statements keep the agents injection-safe
+# and limit them to exactly these four queries.
 #
-# Run locally:   toolbox --tools-file app/agents/tools.yaml
+# Run locally:   toolbox --config app/agents/tools.yaml --enable-api
 # Env required:  FRAUDGRAPH_PROJECT_ID (GCP project hosting dataset `fraudgraph`)
 #
-# Integrity note: agent-facing tools deliberately do NOT expose the ground-truth
-# columns (is_mule_gt / is_fraud_gt). Agents must build case files from observed
-# evidence, not from generator labels; ground truth is used only for offline
-# precision/recall evaluation in the benchmark notebook.
+# Note: the agent-facing tools deliberately do NOT expose the ground-truth columns
+# (is_mule_gt / is_fraud_gt). Agents must build case files from observed evidence,
+# not generator labels; ground truth is only used for offline precision/recall
+# evaluation in the benchmark notebook.
 
 sources:
   fraudgraph-bq:

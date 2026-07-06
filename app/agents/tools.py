@@ -1,8 +1,9 @@
-"""Custom ADK function tools that supplement the MCP Toolbox layer (design §1.6).
+"""Custom ADK function tools that supplement the MCP Toolbox layer.
 
-The Toolbox tools in tools.yaml cover parameterized SQL. This module adds the thin
-custom tool for precomputed graph statistics that don't map cleanly to one query.
-Ground-truth columns are never exposed to agents (evaluation-only, see tools.yaml).
+The Toolbox tools in tools.yaml cover the parameterized SQL. This module adds a
+small extra tool for precomputed graph statistics that don't map cleanly onto a
+single query. Ground-truth columns are never exposed to agents (they exist for
+offline evaluation only, see tools.yaml).
 """
 
 import os
