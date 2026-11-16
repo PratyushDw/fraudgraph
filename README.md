@@ -8,17 +8,19 @@ is too slow for a same-day freeze decision.
 
 FraudGraph does two things about that:
 
-1. **Detects rings on a GPU.** cuDF + cuGraph turn a 10M-edge transaction graph
-   into a risk-ranked queue of fraud rings in about 7 seconds. The same pipeline
-   in pandas + NetworkX takes over 6 minutes on the same machine.
+1. **Detects rings on a GPU.** cuDF + cuGraph run the six benchmarked stages
+   (load, ETL, graph build, WCC, Louvain, PageRank) over a 10M-edge transaction
+   graph in about 7 seconds; the same stages in pandas + NetworkX take over
+   6 minutes on the same machine. GPU-only ring detection (Leiden and ring
+   extraction) adds about 5.6 seconds at 10M.
 2. **Investigates them with agents.** An ADK workflow (Gemini 2.5 Flash on
    Vertex AI) triages the queue, pulls the evidence out of BigQuery through
    parameterized SQL tools, and writes a SAR-style case file where every claim
    cites a real transaction ID. A human analyst approves, rejects or escalates —
    the agent never acts on its own.
 
-**Live console:** https://fraudgraph-console-vy4hk24zgq-el.a.run.app
-(Cloud Run, scales to zero — first load after idle takes ~20s)
+**Console:** deployed on Cloud Run for the hackathon (July 2026) and since taken
+down; screenshots are in `assets/screenshots/`.
 
 Built solo for the Google Gen AI Academy APAC Cohort 2 hackathon, Problem
 Statement 2 (NVIDIA acceleration track).
@@ -36,7 +38,8 @@ logical operations on both engines. Full per-stage rows live in the
 |   20M |                10.3s |     exceeds VM memory    |       — |
 
 Detection quality, measured against the generator's ground-truth labels:
-**precision 0.92, recall 0.40** at the default risk threshold. Precision is what
+**precision 0.92, recall 0.40** at the default risk threshold on the submitted
+1M-edge run. Precision is what
 matters operationally — when the console flags a ring, it is almost always real.
 Recall is bounded by a known limitation: dispersal-mule accounts connect to a
 shared source rather than to each other, so community detection alone can't see
